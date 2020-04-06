@@ -1,38 +1,30 @@
 const path = require('path');
-const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const OptimizeCssPlugin = require('optimize-css-assets-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');  // https://webpack.docschina.org/plugins/mini-css-extract-plugin/
-const OptimizeCssPlugin = require('optimize-css-assets-webpack-plugin'); // https://github.com/NMFR/optimize-css-assets-webpack-plugin
 
 // 区分环境
 const isProduction = process.env.NODE_ENV == 'production';
 
 module.exports = {
-  mode: isProduction ? 'production' : 'development', // 模式
   entry: {
     index: path.resolve(__dirname, 'src/index-entry.js'),
     detail: path.resolve(__dirname, 'src/detail-entry.js')
   },
-  devtool: isProduction ? 'source-map' : 'inline-source-map',
-  devServer: {
-    contentBase: path.join(__dirname, 'dist'),
-    port: '9000', // 默认是8080
-    compress: true, // 是否启用 gzip 压缩
-    hot: true // 热更新
+  output: {
+    path: path.resolve(__dirname, 'dist'), // 输出目录
+    filename: isProduction ? '[name].[chunkhash:6].js' : '[name].[hash:6].js', // 输出文件名
+    chunkFilename: isProduction ? '[name].[chunkhash:8].js' : '[name].[hash:8].js'
   },
   resolve: {
     modules: ['./src/components', 'node_modules'], // 从左到右依次查找
     alias: {
       '@lib': path.resolve(__dirname, 'lib') // 为lib目录添加别名
     },
-    extensions: ['.js', '.json'] // 从左往右
-  },
-  output: {
-    path: path.resolve(__dirname, 'dist'), // 输出目录
-    filename: '[name].[hash:6].js', // 输出文件名
-    chunkFilename:'[name].[hash:6].js'
+    extensions: ['.ts', '.js', '.json'], // 从左往右
+    mainFields: ['browser', 'main']
   },
   module: {
     rules: [
@@ -83,18 +75,16 @@ module.exports = {
     }),
     // 打包前自动清除dist目录
     new CleanWebpackPlugin(),
-    // 热更新插件
-    new webpack.HotModuleReplacementPlugin(),
-    // 拷贝静态资源
+    new MiniCssExtractPlugin({
+      filename: 'css/[name].[contenthash:6].css',
+      chunkFilename: 'css/[name].[hash:8].css'
+    }),
+    new OptimizeCssPlugin(),
     new CopyWebpackPlugin([
       {
         from: path.resolve(__dirname, 'lib'),
         to: path.resolve(__dirname, 'dist/lib')
       }
-    ]),
-    new MiniCssExtractPlugin({
-      filename: isProduction ? 'css/[name].[hash:6].css' : 'css/[name].css'
-    }),
-    new OptimizeCssPlugin()
+    ])
   ]
 }

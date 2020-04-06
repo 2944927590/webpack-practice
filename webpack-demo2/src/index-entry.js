@@ -1,7 +1,9 @@
 import './index.sass';
+
 import '@lib/lib-b';
-import HelloComponent from 'hello';
-import Link from 'link';
+
+import HelloComponent from './components/hello';
+import Link from './components/link';
 
 const handle = () => import(/* webpackChunkName: "handle" */ './handle');
 const handle2 = () => import(/* webpackChunkName: "handle" */ './handle2');
@@ -20,7 +22,6 @@ document.querySelector('#btn').onclick = () => {
 }
 
 
-
-// if (module.hot) {
+// if (module && module.hot) {
 //   module.hot.accept()
 // }
